@@ -10,25 +10,26 @@ class Symbols(Enum):
     CROWN = ("👑", 8.5)
     MAGIC = ("🔮", 8.5)
     GOLD = ("⚜️", 7.0)
-    WILD = ("🎰", 45.4)
-    BONUS = ("💎", 0.1)
+    WILD = ("🎰", 3.4)
+    BONUS = ("💎", 14.1)
 
 
     def __init__(self, emoji, probability):
-        self._emoji = emoji
-        self._probability = probability
+        self.__emoji = emoji
+        self.__probability = probability
 
 
     @property
     def emoji(self):
-        return self._emoji
+        return self.__emoji
 
 
     @property
     def probability(self):
-        return self._probability
+        return self.__probability
 
 
     @classmethod
     def total_probability(cls):
         return sum(symbol.probability for symbol in cls)
+
