@@ -1,0 +1,13 @@
+[tool.poetry]
+name = "start"
+version = "0.1.0"
+description = "Kazik-Bot for Telegram"
+authors = ["ArtemMiler <artemm469@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

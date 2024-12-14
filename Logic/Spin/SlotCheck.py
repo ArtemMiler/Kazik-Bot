@@ -1,11 +1,22 @@
-from Logic import Symbols
-from .SlotSpin import ROWS, COLS, MIN_BONUS_QUANTITY
+import copy
 
-def fill_empty():
-    return [["✖️" for _ in range(COLS)] for _ in range(ROWS)]
+from itertools import product
+
+from Logic import Symbols
+
+from .SlotSpin import COLS, MIN_BONUS_QUANTITY, ROWS
+
+
+def fill_empty(is_bonus = False):
+    if not is_bonus:
+        return [["✖️" for _ in range(COLS)] for _ in range(ROWS)]
+    else:
+        ...
+
 
 WILD = Symbols.WILD.emoji
 BONUS = Symbols.BONUS.emoji
+
 
 class SlotCheck:
     __coll_number = 2
@@ -15,6 +26,9 @@ class SlotCheck:
         self.__ways = 0
         self.__win_slot = fill_empty()
         self.__dict_for_rows = {}
+
+    def __str__(self):
+        return '\n'.join('|' + '|'.join(map(str, row)) + '|' for row in self.__win_slot)
 
     @property
     def win_slot(self):
@@ -28,98 +42,32 @@ class SlotCheck:
     def dict_for_rows(self):
         return self.__dict_for_rows
 
-    def __str__(self):
-        return '\n'.join('|' + '|'.join(map(str, row)) + '|' for row in self.__win_slot)
+    def check_win(self, spin, is_bonus=False):
+        self.__reset(is_bonus)
 
-    def check_win(self, spin):
-        for i in range(ROWS):
-            for k in range(-1, 2):
-                if 0 <= i + k < ROWS:
-                    for n in range(-1, 2):
-                        if 0 <= i + n < ROWS:
-                            if spin[i][1] != BONUS and spin[i + k][0] != BONUS and spin[i + n][2] != BONUS:
-                                win_conditions = [
-                                    spin[i][1] == spin[i + k][0] and spin[i + n][2] == WILD,
-                                    spin[i][1] == spin[i + n][2] and spin[i + k][0] == WILD,
-                                    spin[i][1] == WILD and spin[i + k][0] == WILD,
-                                    spin[i][1] == WILD and spin[i + n][2] == WILD,
-                                    spin[i][1] == spin[i + k][0] == spin[i + n][2],
-                                    spin[i + k][0] == WILD and spin[i + n][2] == WILD,
-                                    spin[i][1] == WILD and spin[i + k][0] == spin[i + n][2],
-                                ]
+        def is_win_condition(_i, _k, _n):
+            conditions = [
+                spin[_i][1] == spin[_i + _k][0] and spin[_i + _n][2] == WILD,
+                spin[_i][1] == spin[_i + _n][2] and spin[_i + _k][0] == WILD,
+                spin[_i][1] == spin[_i + _k][0] == WILD,
+                spin[_i][1] == spin[_i + _n][2] == WILD,
+                spin[_i][1] == spin[_i + _k][0] == spin[_i + _n][2],
+                spin[_i + _k][0] == spin[_i + _n][2] == WILD,
+                spin[_i][1] == WILD and spin[_i + _k][0] == spin[_i + _n][2],
+            ]
+            return any(conditions)
 
-                                if any(win_conditions):
-                                    self.__add_element(i, n, k, spin)
+        for i, k, n in product(range(ROWS), range(-1, 2), range(-1, 2)):
+            if 0 <= i + k < ROWS and 0 <= i + n < ROWS:
+                if not any(spin[i + offset][column] == BONUS for offset, column in [(0, 1), (k, 0), (n, 2)]):
+                    if is_win_condition(i, k, n):
+                        self.__add_element(i, n, k, spin)
 
         if self.__ways > 0:
             self.__check_more_lines(spin)
-            self.check_bonus(spin)
+
+        self.check_bonus(spin)
         return self.__ways
-
-    def __add_element(self, o, m, l, slot):
-        self.__ways += 1
-
-        self.__win_slot[o][1] = slot[o][1]
-        self.__win_slot[o + l][0] = slot[o + l][0]
-        self.__win_slot[o + m][2] = slot[o + m][2]
-
-        symbols_to_check = [slot[o + m][2], slot[o][1], slot[o + l][0]]
-        all_wild = all(symbol == WILD for symbol in symbols_to_check)
-
-        symbol_to_add = WILD if all_wild else next((symbol for symbol in symbols_to_check if symbol != WILD), None)
-
-        if symbol_to_add not in self.__dict_for_symbols:
-            self.__dict_for_symbols[symbol_to_add] = []
-        self.__dict_for_symbols[symbol_to_add].append([o + m, self.__coll_number])
-        if symbol_to_add not in self.__dict_for_rows:
-            self.__dict_for_rows[symbol_to_add] = []
-        self.__dict_for_rows[symbol_to_add].append(self.__coll_number)
-
-    def __check_more_lines(self, slot):
-        self.__coll_number += 1
-        if self.__coll_number >= COLS:
-            return
-
-        dict_copy = {key: value[:] for key, value in self.__dict_for_symbols.items()}
-        temp_dict = {}
-
-        for symbol, coordinates in dict_copy.items():
-            for value, coordinate_coll in coordinates:
-                if coordinate_coll != self.__coll_number - 1:
-                    continue
-
-                for k in range(-1, 2):
-                    if not (0 <= value + k < len(slot)):
-                        continue
-
-                    current_value = slot[value + k][self.__coll_number]
-                    is_wild = current_value == WILD
-                    is_bonus = current_value == BONUS
-
-                    if symbol != WILD:
-                        if symbol == current_value or is_wild:
-                            self.win_slot[value + k][self.__coll_number] = current_value
-                            temp_dict.setdefault(symbol, []).append((value + k, self.__coll_number))
-
-                            self.__dict_for_rows[symbol].append(self.__coll_number)
-                            if self.__coll_number - 1 in self.__dict_for_rows[symbol]:
-                                self.__dict_for_rows[symbol].remove(self.__coll_number - 1)
-                    else:
-                        self.win_slot[value + k][self.__coll_number] = current_value
-                        if is_wild:
-                            temp_dict.setdefault(symbol, []).append((value + k, self.__coll_number))
-                        elif not is_bonus:
-                            temp_dict.setdefault(current_value, []).append((value + k, self.__coll_number))
-
-                            if current_value not in self.__dict_for_rows:
-                                self.__dict_for_rows[current_value] = []
-                            self.__dict_for_rows[current_value].append(self.__coll_number)
-
-        for symbol, new_coordinates in temp_dict.items():
-            self.__dict_for_symbols.setdefault(symbol, []).extend(new_coordinates)
-
-        self.__check_more_lines(slot)
-        self.__ways = sum(len(values) for values in self.__dict_for_rows.values())
 
     def check_bonus(self, slot):
         bonus_count = sum(row.count(BONUS) for row in slot)
@@ -130,3 +78,79 @@ class SlotCheck:
                     if slot[i][j] == BONUS:
                         self.__win_slot[i][j] = BONUS
             return self.__win_slot, bonus_count
+
+    def __add_element(self, _i, _n, _k, slot):
+        self.__ways += 1
+
+        for offset, column in [(_i, 1), (_i + _k, 0), (_i + _n, 2)]:
+            self.__win_slot[offset][column] = slot[offset][column]
+
+        symbols_to_check = [slot[_i + _n][2], slot[_i][1], slot[_i + _k][0]]
+        symbol_to_add = (
+            WILD if all(symbol == WILD for symbol in symbols_to_check)
+            else next((symbol for symbol in symbols_to_check if symbol != WILD), None)
+        )
+
+        self.__dict_for_symbols.setdefault(symbol_to_add, []).append([_i + _n, self.__coll_number])
+        self.__dict_for_rows.setdefault(symbol_to_add, []).append(self.__coll_number)
+
+    def __reset(self, is_bonus):
+        self.__dict_for_rows = {}
+        self.__coll_number = 2
+        self.__dict_for_symbols = {}
+        self.__ways = 0
+        if not is_bonus:
+            self.__win_slot = fill_empty()
+        else:
+            ...
+
+    def __check_more_lines(self, slot):
+        self.__coll_number += 1
+        if self.__coll_number >= COLS:
+            return
+
+        dict_copy = copy.deepcopy(self.__dict_for_symbols)
+        temp_dict = {}
+
+        def process_coordinate(_symbol, _value, _k, _temp_dict):
+            next_value = _value + _k
+            if not (0 <= next_value < ROWS):
+                return
+
+            current_cell = slot[next_value][self.__coll_number]
+            if _symbol == current_cell or current_cell == WILD:
+                self.win_slot[next_value][self.__coll_number] = current_cell
+                _temp_dict.setdefault(_symbol, []).append((next_value, self.__coll_number))
+                update_dict_for_rows(_symbol, self.__coll_number)
+            elif current_cell != WILD and _symbol == WILD:
+                self.win_slot[next_value][self.__coll_number] = current_cell
+                if current_cell != BONUS:
+                    _temp_dict.setdefault(current_cell, []).append((next_value, self.__coll_number))
+                    update_dict_for_rows(current_cell, self.__coll_number)
+
+        def update_dict_for_rows(_symbol, coll):
+            self.__dict_for_rows.setdefault(_symbol, [])
+            self.__dict_for_rows[_symbol].append(coll)
+            if coll - 1 in self.__dict_for_rows[_symbol]:
+                self.__dict_for_rows[_symbol].remove(coll - 1)
+
+        def remove_wilds():
+            if WILD in self.__dict_for_rows:
+                self.__dict_for_rows[WILD] = [
+                    row for row in self.__dict_for_rows[WILD] if row >= COLS - 1
+                ]
+                if not self.__dict_for_rows[WILD]:
+                    del self.__dict_for_rows[WILD]
+
+        for symbol, coordinates in dict_copy.items():
+            for value, coordinate_coll in coordinates:
+                if coordinate_coll != self.__coll_number - 1:
+                    continue
+                for k in range(-1, 2):
+                    process_coordinate(symbol, value, k, temp_dict)
+
+        for symbol, new_coordinates in temp_dict.items():
+            self.__dict_for_symbols.setdefault(symbol, []).extend(new_coordinates)
+        remove_wilds()
+        self.__check_more_lines(slot)
+        self.__ways = sum(len(values) for values in self.__dict_for_rows.values())
