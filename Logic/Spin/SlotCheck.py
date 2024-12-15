@@ -1,5 +1,4 @@
 import copy
-
 from itertools import product
 
 from Logic import Symbols
@@ -123,8 +122,9 @@ class SlotCheck:
                 _temp_dict.setdefault(_symbol, []).append((next_value, self.__coll_number))
                 update_dict_for_rows(_symbol, self.__coll_number)
             elif current_cell != WILD and _symbol == WILD:
-                self.win_slot[next_value][self.__coll_number] = current_cell
+
                 if current_cell != BONUS:
+                    self.win_slot[next_value][self.__coll_number] = current_cell
                     _temp_dict.setdefault(current_cell, []).append((next_value, self.__coll_number))
                     update_dict_for_rows(current_cell, self.__coll_number)
 

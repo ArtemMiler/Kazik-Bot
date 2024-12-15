@@ -2,23 +2,26 @@ from enum import Enum
 
 
 class Symbols(Enum):
-    SPADES = ("♠️", 12.5)
-    CLUBS = ("♣️", 12.5)
-    HEARTS = ("♥️", 12.5)
-    DIAMONDS = ("♦️", 12.5)
-    CLOVERS = ("🍀", 10.5)
-    EYES = ("🧿", 10.0)
-    CROWN = ("👑", 8.5)
-    MAGIC = ("🔮", 8.5)
-    GOLD = ("⚜️", 7.0)
-    WILD = ("🎰", 53.4)
-    BONUS = ("💎", 20.1)
+    SPADES = ("♠️", 12.5, 0.05)
+    CLUBS = ("♣️", 12.5, 0.05)
+    HEARTS = ("♥️", 12.5, 0.05)
+    DIAMONDS = ("♦️", 12.5, 0.05)
+    CLOVERS = ("🍀", 10.5, 0.09)
+    EYES = ("🧿", 10.0, 0.11)
+    CROWN = ("👑", 8.5, 0.25)
+    MAGIC = ("🔮", 8.5, 0.25)
+    GOLD = ("⚜️", 7.0, 0.4)
+    WILD = ("🎰", 13.4, 1.4)
+    BONUS = ("💎", 4.1, 0)
 
-    def __init__(self, emoji, probability):
-        self.__emoji = str(emoji)
-        #if probability <= 0:
-            #raise ValueError(f"Probability для {emoji} должна быть больше 0.")
-        self.__probability = float(probability)
+    def __new__(cls, emoji, probability, price):
+        # вызываем базовый метод __new__, чтобы создать экземпляр
+        obj = object.__new__(cls)
+        obj._value_ = emoji  # это будет значение enum
+        obj.__emoji = str(emoji)
+        obj.__probability = float(probability)
+        obj.__price = float(price)
+        return obj
 
     @property
     def emoji(self):
@@ -27,6 +30,10 @@ class Symbols(Enum):
     @property
     def probability(self):
         return self.__probability
+
+    @property
+    def price(self):
+        return self.__price
 
     @classmethod
     def total_probability(cls):

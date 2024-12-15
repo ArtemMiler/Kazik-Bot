@@ -27,7 +27,7 @@ class SlotSpin:
         return '\n'.join('|' + '|'.join(row) + '|' for row in self.__slot)
 
     @property
-    def get_slot(self):
+    def slot(self):
         return self.__slot
 
     @staticmethod

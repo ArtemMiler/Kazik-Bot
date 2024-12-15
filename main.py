@@ -1,17 +1,8 @@
-from Logic import SlotCheck, SlotSpin
+from Logic import SlotSpin, WinCount
 
-my_spin = SlotSpin()
-print(my_spin)
+for _ in range(5):
+    my_spin = SlotSpin()
+    print(my_spin)
 
-check = SlotCheck()
-check.check_win(my_spin.get_slot)
-print(f"\n{check}")
-print(f"\nWays: {check.ways}")
-print(f"\n{check.dict_for_rows}")
-
-my_spin = SlotSpin()
-print(my_spin)
-check.check_win(my_spin.get_slot)
-print(f"\n{check}")
-print(f"\nWays: {check.ways}")
-print(f"\n{check.dict_for_rows}")
+    my_win = WinCount(10)
+    my_win.count_win(my_spin.slot)
