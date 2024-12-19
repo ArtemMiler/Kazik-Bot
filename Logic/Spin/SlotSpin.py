@@ -17,11 +17,14 @@ MIN_BONUS_QUANTITY = 3
 #     raise ValueError("MAX_BONUS_QUANTITY должно быть целым числом, равным MIN_BONUS_QUANTITY + 2.")
 
 BONUS = Symbols.BONUS.emoji
+WILD = Symbols.WILD.emoji
 
 
 class SlotSpin:
-    def __init__(self):
-        self.__slot = self.__generate_slot()
+    coordinate = []
+
+    def __init__(self, bonus=False):
+        self.__slot = self.__generate_slot(bonus)
 
     def __str__(self):
         return '\n'.join('|' + '|'.join(row) + '|' for row in self.__slot)
@@ -29,6 +32,10 @@ class SlotSpin:
     @property
     def slot(self):
         return self.__slot
+
+    @staticmethod
+    def delete_coordinate():
+        SlotSpin.coordinate = []
 
     @staticmethod
     def __fill_slot():
@@ -42,9 +49,14 @@ class SlotSpin:
             else:
                 yield Symbols.SPADES.emoji
 
-    def __generate_slot(self):
+    def __generate_slot(self, is_super_bonus=False):
         while True:
             slot = [[next(self.__fill_slot()) for _ in range(COLS)] for _ in range(ROWS)]
-            bonus_count = sum(row.count(BONUS) for row in slot)
-            if bonus_count <= MAX_BONUS_QUANTITY:
+
+            if sum(row.count(BONUS) for row in slot) <= MAX_BONUS_QUANTITY:
+                if is_super_bonus:
+                    self.coordinate = [(row, coll) for row in range(ROWS) for coll in range(COLS)
+                                       if slot[row][coll] == WILD]
+                    for row, coll in self.coordinate:
+                        slot[row][coll] = WILD
                 return slot

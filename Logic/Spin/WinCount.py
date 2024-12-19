@@ -1,7 +1,5 @@
 from Logic import Symbols
 
-from .SlotCheck import SlotCheck
-
 
 class WinCount:
     __total_win = 0
@@ -20,19 +18,16 @@ class WinCount:
     def x_win(self):
         return self.__x_win
 
-    def count_win(self, slot):
-        check = SlotCheck()
-        check.check_win(slot)
-        print(f"\n{check}")
-        print(f"\nWays: {check.ways}")
-        print(f"\n{check.dict_for_rows}")
+    @property
+    def bet(self):
+        return self.__bet
+
+    def count_win(self, check):
 
         def find_symbol(_symbol):
-            for element in Symbols:
-                if element.emoji == _symbol:
-                    return element
+            return next((element for element in Symbols if element.emoji == _symbol))
 
-        if SlotCheck.ways:
+        if check.ways:
             for symbol, lines in check.dict_for_rows.items():
                 price = find_symbol(symbol).price
                 for line in lines:
@@ -41,7 +36,6 @@ class WinCount:
                     self.__total_win += self.__one_win
 
         self.__x_win = self.__total_win / self.__bet
-        print(f"\nTotal win: {self.__total_win}")
-        print(f"\nX win: {self.__x_win}")
+        print(f"\nWin: {self.__total_win}")
 
         return self.__total_win, self.__x_win

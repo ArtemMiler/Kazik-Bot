@@ -12,10 +12,9 @@ class Symbols(Enum):
     MAGIC = ("🔮", 8.5, 0.25)
     GOLD = ("⚜️", 7.0, 0.4)
     WILD = ("🎰", 13.4, 1.4)
-    BONUS = ("💎", 4.1, 0)
+    BONUS = ("💎", 7.1, 0)
 
     def __new__(cls, emoji, probability, price):
-        # вызываем базовый метод __new__, чтобы создать экземпляр
         obj = object.__new__(cls)
         obj._value_ = emoji  # это будет значение enum
         obj.__emoji = str(emoji)

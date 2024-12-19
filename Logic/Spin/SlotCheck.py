@@ -5,24 +5,20 @@ from Logic import Symbols
 
 from .SlotSpin import COLS, MIN_BONUS_QUANTITY, ROWS
 
-
-def fill_empty(is_bonus = False):
-    if not is_bonus:
-        return [["✖️" for _ in range(COLS)] for _ in range(ROWS)]
-    else:
-        ...
-
-
 WILD = Symbols.WILD.emoji
 BONUS = Symbols.BONUS.emoji
+EMPTY = "✖️"
+
+
+def fill_empty():
+    return [[EMPTY for _ in range(COLS)] for _ in range(ROWS)]
 
 
 class SlotCheck:
-    __coll_number = 2
-    __dict_for_symbols = {}
-
     def __init__(self):
+        self.__coll_number = 2
         self.__ways = 0
+        self.__dict_for_symbols = {}
         self.__win_slot = fill_empty()
         self.__dict_for_rows = {}
 
@@ -41,8 +37,8 @@ class SlotCheck:
     def dict_for_rows(self):
         return self.__dict_for_rows
 
-    def check_win(self, spin, is_bonus=False):
-        self.__reset(is_bonus)
+    def check_win(self, spin):
+        self.__reset()
 
         def is_win_condition(_i, _k, _n):
             conditions = [
@@ -93,15 +89,12 @@ class SlotCheck:
         self.__dict_for_symbols.setdefault(symbol_to_add, []).append([_i + _n, self.__coll_number])
         self.__dict_for_rows.setdefault(symbol_to_add, []).append(self.__coll_number)
 
-    def __reset(self, is_bonus):
+    def __reset(self):
         self.__dict_for_rows = {}
         self.__coll_number = 2
         self.__dict_for_symbols = {}
         self.__ways = 0
-        if not is_bonus:
-            self.__win_slot = fill_empty()
-        else:
-            ...
+        self.__win_slot = fill_empty()
 
     def __check_more_lines(self, slot):
         self.__coll_number += 1
@@ -136,9 +129,7 @@ class SlotCheck:
 
         def remove_wilds():
             if WILD in self.__dict_for_rows:
-                self.__dict_for_rows[WILD] = [
-                    row for row in self.__dict_for_rows[WILD] if row >= COLS - 1
-                ]
+                self.__dict_for_rows[WILD] = [row for row in self.__dict_for_rows[WILD] if row >= COLS - 1]
                 if not self.__dict_for_rows[WILD]:
                     del self.__dict_for_rows[WILD]
 
