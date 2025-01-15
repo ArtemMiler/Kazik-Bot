@@ -3,10 +3,12 @@ name = "start"
 version = "0.1.0"
 description = "Kazik-Bot for Telegram"
 authors = ["ArtemMiler <artemm469@gmail.com>"]
-readme = "README.md"
+readme = ""
 
 [tool.poetry.dependencies]
 python = "^3.13"
+aiogram = "^3.15.0"
+pydantic = "^2.10.4"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,13 +1,13 @@
 import random
+from decimal import Decimal
 
-from Logic import Symbols
+from Logic.Settings.validations import (FS_BONUS, FS_MEGA, FS_SUPER,
+                                        MIN_BONUS_QUANTITY, POSITION_RANGES,
+                                        QUANTITY_RANGES, ROWS, Sym)
 
-from .SlotCheck import SlotCheck
-from .SlotSpin import MIN_BONUS_QUANTITY, ROWS, SlotSpin
-from .WinCount import WinCount
-
-quantity_ranges = [(0, 1, 3), (1, 4, 2), (4, 10, 1)]
-position_ranges = [(0, 1, 0), (1, 2, 1), (2, 4.5, 2), (4, 7, 3), (7, 10, 4)]
+from .slot_check import SlotCheck
+from .slot_spin import SlotSpin
+from .win_count import WinCount
 
 
 class Bonus:
@@ -21,51 +21,45 @@ class Bonus:
         self.__free_spins = 0
         self.slot = slot
 
-        result = SlotCheck().check_bonus(slot)
+        result = SlotCheck().check_bonus(slot, True)
         if result is None:
             return
 
-        _, bonus = result
         actions = {
-            0: (self.__play_bonus, "=" * 66),
-            1: (self.__play_super_bonus, "*" * 66),
-            2: (self.__play_mega_bonus, "#" * 66),
+            0: (self.play_bonus, "=" * 66),
+            1: (self.play_super_bonus, "*" * 66),
+            2: (self.play_mega_bonus, "#" * 66),
         }
 
-        action = actions.get(bonus - MIN_BONUS_QUANTITY)
+        action = actions.get(result - MIN_BONUS_QUANTITY)
         if action:
             print(action[1])
             action[0](bet)
             print(action[1])
 
     @staticmethod
-    def __add_fs(slot):
-        result = SlotCheck().check_bonus(slot)
-        return result[1] if result else 0
-
-    @staticmethod
     def __random_value(ranges):
         random_value = random.uniform(0, 10)
         return next(value for start, end, value in ranges if start <= random_value <= end)
 
-    def __play_bonus(self, bet):
-        return self.__play(bet, lambda: SlotSpin(), True)
+    def play_bonus(self, bet):
+        return self.__play(bet, FS_BONUS, lambda: SlotSpin(bonus=True), True)
 
-    def __play_super_bonus(self, bet):
-        return self.__play(bet, self.__generate_super_bonus_spin)
+    def play_super_bonus(self, bet):
+        return self.__play(bet, FS_SUPER, self.__generate_super_bonus_spin)
 
-    def __play_mega_bonus(self, bet):
-        result = self.__play(bet, lambda: SlotSpin(True))
+    def play_mega_bonus(self, bet):
         SlotSpin.delete_coordinate()
+        result = self.__play(bet, FS_MEGA, lambda: SlotSpin(bonus=True, super_bonus=True))
         return result
 
-    def __play(self, bet, spin_generator, count=False):
-        self.__free_spins = 10
+    def __play(self, bet, fs, spin_generator, count=False):
+        self.__free_spins = fs
         temp_win = 0
         while self.__free_spins > 0:
             temp_win = self.__process_spin(spin_generator(), bet, temp_win, count)
         print(f"\nTotal win: {self.__win_total}")
-        self.__x_win = self.__win_total / bet
+        self.__x_win = self.__win_total / Decimal(bet)
         return self.__win_total, self.__x_win
 
     def __process_spin(self, my_spin, bet, temp_win, count=False):
@@ -74,11 +68,11 @@ class Bonus:
         check = SlotCheck()
         check.check_win(my_spin.slot)
         print(f"\n{check}")
+        print(f"\nWays: {check.ways}")
 
         my_win = WinCount(bet)
-        new_win, _ = my_win.count_win(check)
-        self.__free_spins += self.__add_fs(my_spin.slot) - 1
-
+        new_win = my_win.count_win(check)
+        self.__free_spins += check.check_bonus(my_spin.slot, True) - 1
         if count:
             temp_win = max(temp_win, new_win)
             print(f"Temp win: {temp_win}")
@@ -90,10 +84,10 @@ class Bonus:
         return temp_win
 
     def __generate_super_bonus_spin(self):
-        my_spin = SlotSpin()
-        quantity = self.__random_value(quantity_ranges)
+        my_spin = SlotSpin(bonus=True)
+        quantity = self.__random_value(QUANTITY_RANGES)
         for _ in range(quantity):
-            position = self.__random_value(position_ranges)
+            position = self.__random_value(POSITION_RANGES)
             for row in range(ROWS):
-                my_spin.slot[row][position] = Symbols.WILD.emoji
+                my_spin.slot[row][position] = Sym.get("WILD").get("emoji")
         return my_spin

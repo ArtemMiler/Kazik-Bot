@@ -1,0 +1,83 @@
+{
+  "Symbols": {
+    "SPADES": {
+      "emoji": "♠️",
+      "probability": 12.5,
+      "price": 0.05
+    },
+    "CLUBS": {
+      "emoji": "♣️",
+      "probability": 12.5,
+      "price": 0.05
+    },
+    "HEARTS": {
+      "emoji": "♥️",
+      "probability": 12.5,
+      "price": 0.05
+    },
+    "DIAMONDS": {
+      "emoji": "♦️",
+      "probability": 12.5,
+      "price": 0.05
+    },
+    "CLOVERS": {
+      "emoji": "🍀",
+      "probability": 10.5,
+      "price": 0.09
+    },
+    "EYES": {
+      "emoji": "🧿",
+      "probability": 10.0,
+      "price": 0.11
+    },
+    "CROWN": {
+      "emoji": "👑",
+      "probability": 8.5,
+      "price": 0.25
+    },
+    "MAGIC": {
+      "emoji": "🔮",
+      "probability": 8.5,
+      "price": 0.25
+    },
+    "GOLD": {
+      "emoji": "⚜️",
+      "probability": 7.0,
+      "price": 0.4
+    },
+    "WILD": {
+      "emoji": "🎰",
+      "probability": 13.4,
+      "price": 1.4
+    },
+    "BONUS": {
+      "emoji": "💎",
+      "probability": 7.1,
+      "price": 0.0
+    }
+  },
+  "EMPTY":"✖️",
+
+  "ROWS": 3,
+  "COLS": 5,
+
+  "MAX_BONUS_QUANTITY": 5,
+  "MIN_BONUS_QUANTITY": 3,
+  "FS_BONUS": 10,
+  "FS_SUPER": 10,
+  "FS_MEGA": 10,
+
+  "QUANTITY_RANGES": [
+    [0, 1, 3],
+    [1, 4, 2],
+    [4, 10, 1]
+  ],
+  "POSITION_RANGES": [
+    [0, 1, 0],
+    [1, 2, 1],
+    [2, 4.5, 2],
+    [4, 7, 3],
+    [7, 10, 4]
+  ],
+  "BALANCE": 10000
+}

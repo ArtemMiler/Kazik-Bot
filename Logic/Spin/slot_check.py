@@ -1,13 +1,11 @@
 import copy
 from itertools import product
 
-from Logic import Symbols
+from Logic.Settings.validations import (COLS, EMPTY, MIN_BONUS_QUANTITY, ROWS,
+                                        Sym)
 
-from .SlotSpin import COLS, MIN_BONUS_QUANTITY, ROWS
-
-WILD = Symbols.WILD.emoji
-BONUS = Symbols.BONUS.emoji
-EMPTY = "✖️"
+WILD = Sym.get("WILD").get("emoji")
+BONUS = Sym.get("BONUS").get("emoji")
 
 
 def fill_empty():
@@ -21,9 +19,6 @@ class SlotCheck:
         self.__dict_for_symbols = {}
         self.__win_slot = fill_empty()
         self.__dict_for_rows = {}
-
-    def __str__(self):
-        return '\n'.join('|' + '|'.join(map(str, row)) + '|' for row in self.__win_slot)
 
     @property
     def win_slot(self):
@@ -64,15 +59,18 @@ class SlotCheck:
         self.check_bonus(spin)
         return self.__ways
 
-    def check_bonus(self, slot):
+    def check_bonus(self, slot, check_only=False):
         bonus_count = sum(row.count(BONUS) for row in slot)
 
         if bonus_count >= MIN_BONUS_QUANTITY:
-            for i in range(ROWS):
-                for j in range(COLS):
-                    if slot[i][j] == BONUS:
-                        self.__win_slot[i][j] = BONUS
-            return self.__win_slot, bonus_count
+            if not check_only:
+                for i in range(ROWS):
+                    for j in range(COLS):
+                        if slot[i][j] == BONUS:
+                            self.__win_slot[i][j] = BONUS
+                return self.__win_slot, bonus_count
+            return bonus_count
+        return 0
 
     def __add_element(self, _i, _n, _k, slot):
         self.__ways += 1
@@ -145,3 +143,4 @@ class SlotCheck:
         remove_wilds()
         self.__check_more_lines(slot)
         self.__ways = sum(len(values) for values in self.__dict_for_rows.values())
+

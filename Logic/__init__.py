@@ -1,7 +1,7 @@
-from .Settings.SymbolsEnum import Symbols
-from .Spin.Bonus import Bonus
-from .Spin.SlotCheck import SlotCheck
-from .Spin.SlotSpin import SlotSpin
-from .Spin.WinCount import WinCount
+from .Spin.bonus import Bonus
+from .Spin.slot_check import SlotCheck
+from .Spin.slot_spin import SlotSpin
+from .Spin.win_count import WinCount
+from .Settings.validations import BALANCE
 
-__all__ = ['SlotSpin', 'SlotCheck', 'WinCount', 'Symbols', 'Bonus']
+__all__ = ['SlotSpin', 'SlotCheck', 'WinCount', 'Bonus', 'BALANCE']
