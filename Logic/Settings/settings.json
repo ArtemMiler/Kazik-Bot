@@ -79,5 +79,9 @@
     [4, 7, 3],
     [7, 10, 4]
   ],
-  "BALANCE": 10000
+  "BALANCE": 100000,
+  "BET": 10,
+  "BONUS_PRISE": 60,
+  "SUPER_BONUS_PRISE": 160,
+  "MEGA_BONUS_PRISE": 420
 }

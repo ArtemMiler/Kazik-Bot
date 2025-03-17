@@ -1,13 +1,15 @@
 import asyncio
+
 from aiogram import Bot, Dispatcher, types
 
 from Bot.config import TOKEN
-from Bot.Handlers import common, spin
+from Bot.Handlers import bonus_spin, common, spin
+
 
 async def main():
     bot = Bot(token=TOKEN)
     dp = Dispatcher()
-    dp.include_routers(common.router, spin.router)
+    dp.include_routers(common.router, spin.router, bonus_spin.router)
 
     bot_info = await bot.get_me()
 
@@ -26,6 +28,3 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         print("Bot stopped!")
-
-
-

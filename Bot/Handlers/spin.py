@@ -1,16 +1,18 @@
-from aiogram.types import Message, CallbackQuery
 from aiogram import Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import CallbackQuery, Message
 
-from ..additional_functoins import send_game, play_game
-from Logic import BALANCE
+from ..additional_functoins import play_game
+from ..Keyboards import game_keyboard
+from ..print_functions import send_game
 
 router = Router()
-bet = 10
+
 
 class BalanceState(StatesGroup):
     entering_bet = State()
+
 
 @router.callback_query(lambda callback: callback.data == "button_bet")
 async def handle_bet_button(callback_query: CallbackQuery, state: FSMContext):
@@ -35,7 +37,7 @@ async def process_bet_input(message: Message, state: FSMContext):
             if main_slot_id:
                 await message.bot.delete_message(chat_id=message.chat.id, message_id=main_slot_id)
 
-            await send_game(message, state, BALANCE)
+            await send_game(message, state, game_keyboard)
 
         else:
             await message.reply("Ставка должна быть в пределах от 0.1 до 1000. Попробуйте снова.")
@@ -45,9 +47,9 @@ async def process_bet_input(message: Message, state: FSMContext):
 
 @router.callback_query(lambda callback: callback.data == "button_spin")
 async def handle_button_spin(callback_query: types.CallbackQuery, state: FSMContext):
-    await play_game(callback_query.message, state, BALANCE,
-                    is_private_chat=callback_query.message.chat.type == "private")
+    await play_game(callback_query, state)
     await callback_query.answer()
+
 
 @router.callback_query(lambda callback: callback.data == "disable")
 async def disable_button(callback_query: types.CallbackQuery):

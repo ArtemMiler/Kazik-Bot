@@ -1,25 +1,24 @@
 import random
 
-from Logic.Settings.validations import (COLS, MAX_BONUS_QUANTITY, ROWS, Sym,
-                                        total_probability, MIN_BONUS_QUANTITY)
+from Logic.Settings.validations import *
 
 WILD = Sym.get("WILD").get("emoji")
 BONUS = Sym.get("BONUS").get("emoji")
 
 
 class SlotSpin:
-    coordinate = set()
 
-    def __init__(self, bonus=False, super_bonus=False):
-        self.__slot = self.__generate_slot(bonus, super_bonus)
+    def __init__(self, coordinate=None):
+        self.__coordinate = coordinate if coordinate else set()
+        self.__slot = self.__generate_slot()
 
     @property
     def slot(self):
         return self.__slot
 
-    @staticmethod
-    def delete_coordinate():
-        SlotSpin.coordinate = set()
+    @property
+    def coordinate(self):
+        return self.__coordinate
 
     @staticmethod
     def __fill_slot():
@@ -31,23 +30,19 @@ class SlotSpin:
                     yield symbol.get("emoji")
                     break
 
-    def __generate_slot(self, is_bonus=False, is_super_bonus=False):
+    def __generate_slot(self):
         while True:
             slot = [[next(self.__fill_slot()) for _ in range(COLS)] for _ in range(ROWS)]
-
             if sum(row.count(BONUS) for row in slot) <= MAX_BONUS_QUANTITY:
-                if is_bonus and sum(row.count(BONUS) for row in slot) < MIN_BONUS_QUANTITY:
-                    if random.uniform(0, 1) < 0.99:
-                        while sum(row.count(BONUS) for row in slot) >= MIN_BONUS_QUANTITY:
-                            slot = [[next(self.__fill_slot()) for _ in range(COLS)] for _ in range(ROWS)]
-                if is_super_bonus:
-                    SlotSpin.coordinate.update(
-                        (row, coll)
-                        for row in range(ROWS)
-                        for coll in range(COLS)
-                        if slot[row][coll] == WILD
-                    )
-
-                    for row, coll in SlotSpin.coordinate:
-                        slot[row][coll] = WILD
                 return slot
+
+    def coordinate_update(self):
+        self.__coordinate.update(
+            (row, coll)
+            for row in range(ROWS)
+            for coll in range(COLS)
+            if self.__slot[row][coll] == WILD
+        )
+
+        for row, coll in self.__coordinate:
+            self.__slot[row][coll] = WILD
