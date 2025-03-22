@@ -4,9 +4,11 @@ from aiogram import Bot, Dispatcher, types
 
 from Bot.config import TOKEN
 from Bot.Handlers import bonus_spin, common, spin
+from Database import create_tables
 
 
 async def main():
+    await create_tables()
     bot = Bot(token=TOKEN)
     dp = Dispatcher()
     dp.include_routers(common.router, spin.router, bonus_spin.router)

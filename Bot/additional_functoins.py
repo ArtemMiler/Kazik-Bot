@@ -1,3 +1,4 @@
+from Database import get_user_data, add_balance
 from Logic import *
 from Logic.Settings import *
 
@@ -6,26 +7,38 @@ from .print_functions import edit, format_message_check, smooth_transform
 
 
 async def play_game(callback_query, state):
-    data = await state.get_data()
-    bet = data.get("bet", BET)
+    chat_id = callback_query.message.chat.id
+    user_data = await get_user_data(chat_id)
 
-    spin = SlotSpin()
-    current_slot = spin.slot
+    if user_data.bet <= user_data.balance:
+        await add_balance(chat_id, -user_data.bet)
 
-    await smooth_transform(current_slot, callback_query.message, state)
+        spin = SlotSpin()
+        current_slot = spin.slot
 
-    check = SlotCheck(spin.slot)
-    check.check_win()
-    win = WinCount(bet)
-    text = await format_message_check(check, state, win.count_win(check))
-    await edit(text, game_keyboard, callback_query.message)
+        await smooth_transform(current_slot, callback_query.message, chat_id)
 
-    if check.count_bonus():
-        bonus_type = check.count_bonus() - MIN_BONUS_QUANTITY
-        await find_bonus(callback_query, state, bonus_type)
+        check = SlotCheck(spin.slot)
+        check.check_win()
+        win = WinCount(user_data.bet)
+        win_sum = win.count_win(check)
+        await add_balance(chat_id, win_sum)
+        text = await format_message_check(check, chat_id, win_sum)
+        await edit(text, game_keyboard, callback_query.message)
+
+        if check.count_bonus():
+            bonus_type = check.count_bonus() - MIN_BONUS_QUANTITY
+            await find_bonus(callback_query, state, bonus_type)
+    elif user_data.balance < MIN_BET:
+        await callback_query.answer(f"Не достаточно средств на Балансе! "
+                                    f"Ожидайте пополнение счета завтра",
+                                    show_alert=True)
+    else:
+        await callback_query.answer("Уменьшите ставку", show_alert=True)
 
 
 async def find_bonus(callback_query, state, bonus_type):
+
     await callback_query.answer(
         "Поздравляем с выигрышем бонусной игры 🎰",
         show_alert=True
@@ -36,7 +49,7 @@ async def find_bonus(callback_query, state, bonus_type):
         free_spins=BONUS_CONDITIONALS.get(bonus_type)
     )
     check = SlotCheck()
-    text = await format_message_check(check, state)
+    text = await format_message_check(check, callback_query.message.chat.id)
     await edit(text, bonus_keyboard, callback_query.message)
 
 

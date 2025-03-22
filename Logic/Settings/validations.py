@@ -24,17 +24,17 @@ class Settings(BaseModel):
     EMPTY: str = Field(...)
     Symbols: Dict[str, Symbol]
     BALANCE: float = Field(..., ge=0)
-    BET: float = Field(..., gt=0)
+    MIN_BET: float = Field(..., gt=0)
+    MAX_BET: float = Field(..., gt=0)
     BONUS_PRISE: float = Field(..., gt=0)
     SUPER_BONUS_PRISE: float = Field(..., gt=0)
     MEGA_BONUS_PRISE: float = Field(..., gt=0)
 
-    @field_validator("BET")
-    def check_bet_balance(cls, bet, info):
-        balance = info.data.get("BALANCE")
-        if bet is not None and balance is not None and bet > balance:
-            raise ValueError(f"BET ({bet}) не может быть больше BALANCE ({balance})")
-        return bet
+    @field_validator('MAX_BET')
+    def check_max_bet(cls, max_bet, info):
+        min_bet = info.data.get("MIN_BET")
+        if max_bet < min_bet:
+            raise ValueError(f"Bonus quantity must be greater than {min_bet}")
 
     @field_validator("MAX_BONUS_QUANTITY")
     def check_bonus_quantity(cls, max_bonus, info):
@@ -95,7 +95,8 @@ try:
     POSITION_RANGES = data["POSITION_RANGES"]
     EMPTY = data["EMPTY"]
     BALANCE = data["BALANCE"]
-    BET = data["BET"]
+    MIN_BET = data["MIN_BET"]
+    MAX_BET = data["MAX_BET"]
     total_probability = sum(symbol["probability"] for symbol in Sym.values())
     BONUS_CONDITIONALS = {
         0: FS_BONUS,

@@ -3,19 +3,20 @@ import asyncio
 from aiogram import types
 
 from Bot.Keyboards import disable_bonus_keyboard, disable_game_keyboard
+from Database import get_user_data, update_message_id
 from Logic.Settings import *
 from Logic.Spin import SlotCheck
 
 
-async def smooth_transform(matrix2, message, state):
+async def smooth_transform(matrix2, message, chat_id):
     async def format_with_state(matrix):
-        return await format_message_matrix(matrix, state)
+        return await format_message_matrix(matrix, chat_id)
     await smooth_transform_common(matrix2, message, edit_message, format_with_state)
 
 
-async def smooth_bonus_transform(matrix2, message, state):
+async def smooth_bonus_transform(matrix2, message, chat_id):
     async def format_with_state(matrix):
-        return await format_message_matrix(matrix, state)
+        return await format_message_matrix(matrix, chat_id)
     await smooth_transform_common(matrix2, message, edit_bonus_message, format_with_state)
 
 
@@ -45,41 +46,44 @@ async def smooth_transform_common(matrix2, obj, edit_func, format_func):
     await asyncio.sleep(1.5)
 
 
-async def format_message_check(check, state, win=0):
-    return await format_message_base(check, state, win)
+async def format_message_check(check, chat_id, win=0):
+    return await format_message_base(check, chat_id, win)
 
 
-async def format_message_matrix(matrix, state):
-    return await format_message_base(matrix, state)
+async def format_message_matrix(matrix, chat_id):
+    return await format_message_base(matrix, chat_id)
 
 
-async def format_message_base(content, state, win=0):
-    data = await state.get_data()
-    fs = data.get("free_spins", 0)
-    bet = data.get("bet", BET)
+async def format_message_base(content, chat_id, win=0):
+    user_data = await get_user_data(chat_id)
+    bet = user_data.bet
+    balance = user_data.balance
+    free_spins = user_data.free_spin
 
     base_text = (
         f"<b>JOKER CASINO</b>\n"
         f"{print_list(content.win_slot if isinstance(content, SlotCheck) else content)}\n"
-        f"<b>Баланс: </b>{float(BALANCE)}\n"
+        f"<b>Баланс: </b>{float(balance)}\n"
         f"<b>Ставка: </b>{float(bet)}"
     )
 
-    bonus_text = f"\n<b>FREE SPINS: </b>{fs}" if fs >= 0 else ""
+    bonus_text = f"\n<b>FREE SPINS: </b>{free_spins}" if free_spins >= 0 else ""
 
     win_text = ""
+    ways_text = ""
     if isinstance(content, SlotCheck) and win > 0:
         win_text = (f"\n<b>Выигрыш: </b>{float(win)}\n"
                     f"x{round(float(win) / float(bet), 2)}\n"
-                    f"<b>Количество путей: </b>{content.ways}"
                     )
+        if content.ways > 0:
+            ways_text = f"<b>Количество путей: </b>{content.ways}"
 
-    return base_text + bonus_text + win_text
+    return base_text + bonus_text + win_text + ways_text
 
 
-async def send_game(message, state, kb):
-    data = await state.get_data()
-    main_slot_id = data.get("main_slot")
+async def send_game(message, kb):
+    user_data = await get_user_data(message.chat.id)
+    main_slot_id = user_data.main_message_id
 
     if main_slot_id:
         try:
@@ -89,9 +93,9 @@ async def send_game(message, state, kb):
 
     my_check = SlotCheck()
 
-    text = await format_message_check(my_check, state)
+    text = await format_message_check(my_check, message.chat.id)
     sent_message = await print_message(text, kb, message)
-    await state.update_data(main_slot=sent_message.message_id)
+    await update_message_id(message.chat.id, sent_message.message_id)
 
 
 def print_list(matrix):

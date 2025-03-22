@@ -3,9 +3,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
+from Database import get_user_data, update_bet
 from ..additional_functoins import play_game
 from ..Keyboards import game_keyboard
 from ..print_functions import send_game
+
+from  Logic import MIN_BET, MAX_BET
 
 router = Router()
 
@@ -17,32 +20,33 @@ class BalanceState(StatesGroup):
 @router.callback_query(lambda callback: callback.data == "button_bet")
 async def handle_bet_button(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.message.answer(
-        "Введите ставку от 10 до 10000:"
+        f"Введите ставку от {MIN_BET} до {MAX_BET}:"
     )
     await state.set_state(BalanceState.entering_bet)
     await callback_query.answer()
 
 
 @router.message(BalanceState.entering_bet)
-async def process_bet_input(message: Message, state: FSMContext):
+async def process_bet_input(message: Message):
+    user_data = await get_user_data(message.chat.id)
+    current_balance = user_data.balance
+    main_message_id = user_data.main_message_id
     try:
         input_bet = float(message.text)
-        if 10 <= input_bet <= 10000:
-            await state.update_data(bet=input_bet)
+        if MIN_BET <= input_bet <= current_balance:
+            await update_bet(message.chat.id, round(input_bet, 2))
 
             await message.reply(f"Ваша ставка установлена: {input_bet}💰")
-            data = await state.get_data()
-            main_slot_id = data.get("main_slot")
 
-            if main_slot_id:
-                await message.bot.delete_message(chat_id=message.chat.id, message_id=main_slot_id)
+            if main_message_id:
+                await message.bot.delete_message(chat_id=message.chat.id, message_id=main_message_id)
 
-            await send_game(message, state, game_keyboard)
+            await send_game(message, game_keyboard)
 
         else:
-            await message.reply("Ставка должна быть в пределах от 0.1 до 1000. Попробуйте снова.")
+            await message.reply(f"Ставка должна быть в пределах от {MIN_BET} до {current_balance}. Попробуйте снова.")
     except ValueError:
-        await message.reply("Введите корректное число от 0.1 до 1000.")
+        await message.reply(f"Введите корректное число от {MIN_BET} до {current_balance}.")
 
 
 @router.callback_query(lambda callback: callback.data == "button_spin")

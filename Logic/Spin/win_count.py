@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 
 from Logic.Settings.validations import Sym
 
@@ -7,7 +7,7 @@ class WinCount:
 
     def __init__(self, bet):
         self.__bet = Decimal(str(bet))
-        self.__total_win = 0
+        self.__total_win = Decimal(0)
         self.__one_win = 0
 
     @property
@@ -22,7 +22,8 @@ class WinCount:
                     self.__one_win = Decimal(0)
                     self.__one_win = self.__bet * price * Decimal(line) ** 2
                     self.__total_win += self.__one_win
-        return self.__total_win
+
+        return self.__total_win.quantize(Decimal("0.01"), rounding=ROUND_DOWN)
 
     @staticmethod
     def __find_symbol(symbol):

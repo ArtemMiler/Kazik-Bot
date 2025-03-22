@@ -1,8 +1,8 @@
 from aiogram import Router
 from aiogram.filters import Command
-from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
+from Database import get_user_data, add_user_data, update_message_id
 from ..Keyboards.all_keyboards import game_keyboard, start_keyboard
 from ..print_functions import send_game
 
@@ -10,19 +10,33 @@ router = Router()
 
 
 @router.message(Command("start"))
-async def cmd_start(message: Message, state: FSMContext):
+async def cmd_start(message: Message):
+    main_slot_id = await check_user_in_db(message)
     if message.chat.type == "private":
-        data = await state.get_data()
-        main_slot_id = data.get("main_slot")
         if main_slot_id:
-            await message.bot.delete_message(chat_id=message.chat.id, message_id=main_slot_id)
+            try:
+                await message.bot.delete_message(chat_id=message.chat.id, message_id=main_slot_id)
+            except Exception as e:
+                print(f"Error deleting message: {e}")
 
         await message.answer(
             "Выберите режим игры:",
             reply_markup=start_keyboard
         )
     else:
-        await send_game(message, state, game_keyboard)
+        await send_game(message, game_keyboard)
+
+
+async def check_user_in_db(message):
+    user_data = await get_user_data(message.chat.id)
+    if not user_data:
+        await add_user_data(message.chat.id)
+        user_data = await get_user_data(message.chat.id)
+
+    if not user_data.main_message_id:
+        await update_message_id(message.chat.id, message.message_id)
+
+    return user_data.main_message_id
 
 
 @router.callback_query(lambda callback: callback.data == "real_button")
@@ -40,9 +54,9 @@ async def real_button_handler(callback_query: CallbackQuery):
 
 
 @router.callback_query(lambda callback: callback.data == "demo_button")
-async def demo_button_handler(callback_query: CallbackQuery, state: FSMContext):
+async def demo_button_handler(callback_query: CallbackQuery):
     await callback_query.message.delete()
-    await send_game(callback_query.message, state, game_keyboard)
+    await send_game(callback_query.message, game_keyboard)
     await callback_query.answer()
 
 
