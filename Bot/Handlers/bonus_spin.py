@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
 from Database import get_user_data
-from Database.db_creation import update_free_spin, add_balance
+from Database.db_creation import add_balance, update_free_spin
 from Logic import BaseBonus, SlotCheck
 from Logic.Settings import *
 
@@ -66,12 +66,12 @@ async def bonus_select(callback_query: types.CallbackQuery, state: FSMContext):
         await add_balance(callback_query.message.chat.id, -bonus_price)
         await _update_game_screen(callback_query, bonus_keyboard)
     elif user_data.balance < MIN_BET:
-        await callback_query.answer(f"Не достаточно средств на Балансе! "
-                                    f"Ожидайте пополнение счета завтра",
+        await callback_query.answer("Не достаточно средств на Балансе! "
+                                    "Ожидайте пополнение счета завтра",
                                     show_alert=True)
     else:
-        await callback_query.answer(f"Недостаточно средств для покупки бонуса! "
-                                    f"Попробуйте уменьшить ставку или купить бонус дешевле",
+        await callback_query.answer("Недостаточно средств для покупки бонуса! "
+                                    "Попробуйте уменьшить ставку или купить бонус дешевле",
                                     show_alert=True)
 
 

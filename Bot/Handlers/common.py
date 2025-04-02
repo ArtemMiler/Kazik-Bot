@@ -2,7 +2,8 @@ from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import CallbackQuery, Message
 
-from Database import get_user_data, add_user_data, update_message_id
+from Database import add_user_data, get_user_data, update_message_id
+
 from ..Keyboards.all_keyboards import game_keyboard, start_keyboard
 from ..print_functions import send_game
 
@@ -13,16 +14,16 @@ router = Router()
 async def cmd_start(message: Message):
     main_slot_id = await check_user_in_db(message)
     if message.chat.type == "private":
+        answer = await message.answer(
+            "Выберите режим игры:",
+            reply_markup=start_keyboard
+        )
         if main_slot_id:
             try:
                 await message.bot.delete_message(chat_id=message.chat.id, message_id=main_slot_id)
             except Exception as e:
                 print(f"Error deleting message: {e}")
-
-        await message.answer(
-            "Выберите режим игры:",
-            reply_markup=start_keyboard
-        )
+        await update_message_id(message.chat.id, answer.message_id)
     else:
         await send_game(message, game_keyboard)
 

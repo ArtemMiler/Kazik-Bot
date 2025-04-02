@@ -4,11 +4,11 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
 from Database import get_user_data, update_bet
+from Logic import MAX_BET, MIN_BET
+
 from ..additional_functoins import play_game
 from ..Keyboards import game_keyboard
 from ..print_functions import send_game
-
-from  Logic import MIN_BET, MAX_BET
 
 router = Router()
 
@@ -44,7 +44,8 @@ async def process_bet_input(message: Message):
             await send_game(message, game_keyboard)
 
         else:
-            await message.reply(f"Ставка должна быть в пределах от {MIN_BET} до {current_balance}. Попробуйте снова.")
+            await message.reply(f"Ставка должна быть в пределах от {MIN_BET} "
+                                f"до {current_balance}. Попробуйте снова.")
     except ValueError:
         await message.reply(f"Введите корректное число от {MIN_BET} до {current_balance}.")
 

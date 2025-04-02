@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher, types
 
 from Bot.config import TOKEN
 from Bot.Handlers import bonus_spin, common, spin
-from Database import create_tables
+from Database import create_tables, restore_balance_at_midnight
 
 
 async def main():
@@ -24,6 +24,8 @@ async def main():
             )
 
     await dp.start_polling(bot)
+
+    await restore_balance_at_midnight()
 
 if __name__ == "__main__":
     try:

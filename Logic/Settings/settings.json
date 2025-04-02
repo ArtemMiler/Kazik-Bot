@@ -47,12 +47,12 @@
     },
     "WILD": {
       "emoji": "🎰",
-      "probability": 13.4,
+      "probability": 9.4,
       "price": 1.4
     },
     "BONUS": {
       "emoji": "💎",
-      "probability": 7.1,
+      "probability": 5.1,
       "price": 0.0
     }
   },
@@ -82,7 +82,7 @@
   "BALANCE": 100000,
   "MIN_BET": 10,
   "MAX_BET": 100000,
-  "BONUS_PRISE": 60,
-  "SUPER_BONUS_PRISE": 160,
-  "MEGA_BONUS_PRISE": 420
+  "BONUS_PRISE": 100,
+  "SUPER_BONUS_PRISE": 500,
+  "MEGA_BONUS_PRISE": 1500
 }

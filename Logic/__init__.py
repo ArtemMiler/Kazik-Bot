@@ -1,5 +1,6 @@
-from .Settings.validations import (BALANCE, MIN_BET, BONUS_PRISE, MEGA_BONUS_PRISE,
-                                   SUPER_BONUS_PRISE, MAX_BET)
+from .Settings.validations import (BALANCE, BONUS_PRISE, MAX_BET,
+                                   MEGA_BONUS_PRISE, MIN_BET,
+                                   SUPER_BONUS_PRISE)
 from .Spin.bonus import BaseBonus, Bonus, MegaBonus, SuperBonus
 from .Spin.slot_check import SlotCheck
 from .Spin.slot_spin import SlotSpin

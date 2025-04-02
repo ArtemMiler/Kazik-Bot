@@ -1,4 +1,5 @@
-from Database import get_user_data, add_balance
+from Database import add_balance, get_user_data
+from Database.db_creation import update_free_spin
 from Logic import *
 from Logic.Settings import *
 
@@ -30,8 +31,8 @@ async def play_game(callback_query, state):
             bonus_type = check.count_bonus() - MIN_BONUS_QUANTITY
             await find_bonus(callback_query, state, bonus_type)
     elif user_data.balance < MIN_BET:
-        await callback_query.answer(f"Не достаточно средств на Балансе! "
-                                    f"Ожидайте пополнение счета завтра",
+        await callback_query.answer("Не достаточно средств на Балансе! "
+                                    "Ожидайте пополнение счета завтра",
                                     show_alert=True)
     else:
         await callback_query.answer("Уменьшите ставку", show_alert=True)
@@ -46,8 +47,9 @@ async def find_bonus(callback_query, state, bonus_type):
 
     await state.update_data(
         bonus_type=bonus_type,
-        free_spins=BONUS_CONDITIONALS.get(bonus_type)
     )
+    free_spin = BONUS_CONDITIONALS.get(bonus_type)
+    await update_free_spin(callback_query.message.chat.id, free_spin)
     check = SlotCheck()
     text = await format_message_check(check, callback_query.message.chat.id)
     await edit(text, bonus_keyboard, callback_query.message)

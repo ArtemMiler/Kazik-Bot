@@ -1,8 +1,8 @@
-from .validations import (BALANCE, MIN_BET, BONUS_CONDITIONALS, BONUS_PRISE, COLS,
-                          EMPTY, FS_BONUS, FS_MEGA, FS_SUPER,
-                          MAX_BONUS_QUANTITY, MEGA_BONUS_PRISE,
+from .validations import (BALANCE, BONUS_CONDITIONALS, BONUS_PRISE, COLS,
+                          EMPTY, FS_BONUS, FS_MEGA, FS_SUPER, MAX_BET,
+                          MAX_BONUS_QUANTITY, MEGA_BONUS_PRISE, MIN_BET,
                           MIN_BONUS_QUANTITY, POSITION_RANGES, QUANTITY_RANGES,
-                          ROWS, SUPER_BONUS_PRISE, Sym, total_probability, MAX_BET)
+                          ROWS, SUPER_BONUS_PRISE, Sym, total_probability)
 
 __all__ = [
     "Sym", "ROWS", "COLS", "MIN_BONUS_QUANTITY", "MAX_BONUS_QUANTITY",

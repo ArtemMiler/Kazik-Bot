@@ -1,7 +1,8 @@
+import decimal
 import random
 
 from Database import get_user_data
-from Database.db_creation import update_free_spin, add_balance
+from Database.db_creation import add_balance, update_free_spin
 from Logic.Settings.validations import *
 
 from .slot_check import SlotCheck
@@ -14,7 +15,7 @@ class BaseBonus:
     def __init__(self, callback_query, state):
         self._callback_query = callback_query
         self._state = state
-        self._total_win = 0
+        self._total_win = decimal.Decimal('0')
         self._chat_id = self._callback_query.message.chat.id
 
     @property
@@ -27,7 +28,7 @@ class BaseBonus:
 
     async def initialize(self):
         state_data = await self._state.get_data()
-        self._total_win = state_data.get("total_win", 0)
+        self._total_win = decimal.Decimal(str(state_data.get("total_win", '0')))
 
     async def _process_spin(self, my_spin):
         from Bot.print_functions import smooth_bonus_transform
@@ -63,8 +64,8 @@ class BaseBonus:
         if free_spin <= 0:
             await edit(text, next_keyboard, self._callback_query.message)
             if self._total_win > 0:
-                await self._callback_query.answer(f"Поздравляем! Вы выиграли {self._total_win}!",
-                                                 show_alert=True)
+                await self._callback_query.answer(f"Поздравляем! Вы выиграли {round(self._total_win, 2)}!",
+                                                  show_alert=True)
             await self._state.update_data(temp_win=0, total_win=0, wild_slot=None)
             self._coordinate = None
         else:
@@ -127,7 +128,7 @@ class SuperBonus(BaseBonus):
     async def _count_logic(self, my_win):
         self._total_win += my_win.total_win
         await self._state.update_data(total_win=self._total_win)
-        await add_balance(self._chat_id, self._total_win)
+        await add_balance(self._chat_id, float(self._total_win))
         return my_win.total_win
 
 
@@ -151,5 +152,5 @@ class MegaBonus(BaseBonus):
     async def _count_logic(self, my_win, my_spin):
         self._total_win += my_win.total_win
         await self._state.update_data(wild_slot=my_spin.coordinate, total_win=self._total_win)
-        await add_balance(self._chat_id, self._total_win)
+        await add_balance(self._chat_id, float(self._total_win))
         return my_win.total_win

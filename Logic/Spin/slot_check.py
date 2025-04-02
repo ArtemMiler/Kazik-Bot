@@ -49,7 +49,8 @@ class SlotCheck:
 
         for i, k, n in product(range(ROWS), range(-1, 2), range(-1, 2)):
             if 0 <= i + k < ROWS and 0 <= i + n < ROWS:
-                if not any(self.__slot[i + offset][column] == BONUS for offset, column in [(0, 1), (k, 0), (n, 2)]):
+                if not any(self.__slot[i + offset][column] == BONUS for offset, column in
+                           [(0, 1), (k, 0), (n, 2)]):
                     if is_win_condition(i, k, n):
                         self.__add_element(i, n, k)
 
